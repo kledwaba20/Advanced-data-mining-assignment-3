@@ -1,0 +1,66 @@
+---
+title: "Advanced DM Assignment Three"
+author: "Khutso Ledwaba"
+date: "2023-04-14"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+library('ISLR') 
+library('dplyr') 
+library('glmnet') 
+library('caret')
+library('tree')
+library('class')
+library('kernlab')
+
+Carseats <- Carseats
+Carseats_Filtered <- Carseats %>% select("Sales", "Price", "Advertising","Population","Age","Income","Education")
+
+##Question 1
+
+#Normalizing the data
+Normalizaton_data <- preProcess(Carseats_Filtered[,-1], method=c("center","scale"))
+DATA <- predict(Normalizaton_data, Carseats_Filtered)
+head(DATA)
+
+set.seed(123)
+#Building the linear regression model
+model <- train(Sales~., data=DATA, method="svmLinear")
+model
+
+#Question 2
+
+# set up the training control for cross-validation
+set.seed(123)
+ctrl<- trainControl(method="repeatedcv", number=5, repeats=2)
+# define the search grid
+grid <- expand.grid(C= c(0.1, 0.5, 1, 10))
+# train the model using the customized search grid
+searchmodel <- train(Sales~., data=DATA,method="svmLinear", trControl=ctrl,tuneGrid=grid)
+# print the results
+searchmodel
+
+
+#Question 3
+
+#Neural network model
+set.seed(123)
+M2 <- train(Sales~., data=DATA, method="nnet", linout=TRUE, verbose=FALSE, trace=FALSE)
+M2
+
+#Question 4
+#predictedSales
+newDATA <- data.frame(Price=6.54, Population=124, Advertising=0, Age=76, Income= 110, Education=10)
+newDATA
+
+predictedSales <- predict(M2, newDATA)
+predictedSales
+```
